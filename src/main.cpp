@@ -62,6 +62,13 @@ private:
     return std::mktime(&tm);
   }
 
+  std::string time_t_to_string(std::time_t time) {
+    std::tm* tm = std::localtime(&time);
+    std::ostringstream ss;
+    ss << std::put_time(tm, "%Y-%m-%dT%H:%M:%S");
+    return ss.str();
+  }
+
   void read_message()
   {
     auto self(shared_from_this());
@@ -92,7 +99,30 @@ private:
             else if(starts_with("GET", message))
             {
                 std::vector<std::string> splitedMessage = splitString(message, "|");
-
+                int numberLogs = std::stoi(splitedMessage[2]); 
+                std::string fileName = splitedMessage[1] + ".dat";
+                std::fstream file(fileName, std::fstream::in | std::fstream::binary); 
+                std::string result;
+                if (file.is_open())
+                {
+                    file.seekg(0, std::ios::end);
+                    int file_size = file.tellg();
+                    file.seekg(0, std::ios::beg);
+		                int n = file_size/sizeof(LogRecord);
+                    int readLogs = numberLogs > n ? n : numberLogs;
+                    std::cout << file_size << " asdasd " << sizeof(LogRecord) << std::endl;
+                    result = std::to_string(readLogs);
+                    for(int i = 0; i < readLogs; i++)
+                    {
+                      LogRecord log;
+		                  file.read((char*)&log, sizeof(LogRecord));
+                      std::string time = time_t_to_string(log.timestamp);
+                      std::string value = std::to_string(log.value);
+                      result = result + ";" + time + "|" + value;
+                    } 
+                    file.close();
+                }
+              write_message(result);
             }
             else
             {
