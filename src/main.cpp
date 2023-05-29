@@ -110,7 +110,6 @@ private:
                     file.seekg(0, std::ios::beg);
 		                int n = file_size/sizeof(LogRecord);
                     int readLogs = numberLogs > n ? n : numberLogs;
-                    std::cout << file_size << " asdasd " << sizeof(LogRecord) << std::endl;
                     result = std::to_string(readLogs);
                     for(int i = 0; i < readLogs; i++)
                     {
@@ -122,11 +121,16 @@ private:
                     } 
                     file.close();
                 }
+                else
+                {
+                  result = "ERROR|INVALID_SENSOR_ID\r\n";
+                }
               write_message(result);
             }
             else
             {
-
+              std::string error = "ERROR|INVALID_REQUISITION\r\n";
+              write_message(error);
             }
           }
         });
